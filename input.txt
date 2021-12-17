@@ -1,0 +1,32 @@
+// asdasadsasdadssad
+/* adsadsadadssadaws */
+
+#include <iostream>
+
+// create a class
+class Room {
+
+   public:
+    double length;
+    double breadth;
+    double height;
+
+    double calculateArea() {
+        return length * breadth;
+    }
+
+    double calculateVolume() {
+        return length * breadth * height;
+    }
+};
+
+// sample function
+void sampleFunction() {
+    // create objects
+    Room room1, room2;
+}
+
+int main() {
+    std::cout << "Hello World!";
+    return 0;
+}
