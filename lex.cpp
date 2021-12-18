@@ -3,22 +3,22 @@
 #include <iomanip>
 #include <string>
 #include "LexicalAnalyzer.h"
-
+#include <filesystem>
 using namespace std;
 
-  // calculate global variables
-  int comments = 0; 
-  int variables = 0;
-  int function_classes = 0;
-  int statements = 0;
-  int libs = 0;
-  int open_parent = 0;
-  int off_parent = 0;
-  int open_curly = 0;
-  int off_curly = 0;
-  int semicolon = 0;
-  int lines = 0;
-  int total = 0;
+// calculate global variables
+int comments = 0; 
+int variables = 0;
+int function_classes = 0;
+int statements = 0;
+int libs = 0;
+int open_parent = 0;
+int off_parent = 0;
+int open_curly = 0;
+int off_curly = 0;
+int semicolon = 0;
+int lines = 0;
+int total = 0;
 
 int main()
 {
@@ -35,14 +35,14 @@ int main()
 // allows user to enter a file name to open
 void LexicalAnalyzer::getFileName(ifstream &myFile)
 {
-  string fileName = "input.txt";
+  string fileName = "";
 
-  // cout << "Enter file name: ";
+  cout << "Enter file name: ";
 
   // keep prompting until user has typed in a valid file name
   while (true)
   {
-    // cin >> fileName;
+    cin >> fileName;
     myFile.open(fileName);
 
     if (!myFile)
@@ -65,14 +65,16 @@ void LexicalAnalyzer::scanFile(ifstream &myFile)
   string myNumber = "";
   string myString = "";
   int tempX;
+  int error_count = 0;
 
 
   // continue to go through input file line by line
   while (getline(myFile, readLine))
   {
     lines = lines +1;
+    syntaxCheck(readLine,lines);
     // parse line to get tokens
-    for (int x = 0; x <= readLine.length(); x++)
+    for (int x = 0; x < readLine.length(); x++)
     {
       tempX = x;
       lookahead = readLine[x];
@@ -118,6 +120,7 @@ void LexicalAnalyzer::scanFile(ifstream &myFile)
 
     }
   }
+  
 
   // display all calculates.
   cout << "### Lexical Analysis Starting... ###" << endl;
@@ -132,22 +135,80 @@ void LexicalAnalyzer::scanFile(ifstream &myFile)
   cout << "lines : " << lines << endl;
   total = comments + variables + function_classes + statements + libs + open_parent + open_curly + semicolon + lines;
   cout << "totals : " << total << endl;
-  if ((off_curly == open_curly) && (off_parent == open_parent)){
-    cout << "Bracket balance successful!" << endl;
+  cout << "### Lexical Analysis Ending... ###" << "\n" << endl;
+
+  if (off_curly == open_curly){
+    cout << "{} balance successful!" << endl;
   }
   else{
-    cout << "Bracket balance unsuccessful!" << endl;
+    cout << "{} balance unsuccessful!" << endl;
   }
-  cout << "### Lexical Analysis Ending... ###" << endl;
 
-  // cout << "### Syntax Analysis Starting... ###" << endl;
-  // cout << "### Syntax Analysis Ending... ###" << endl;
+  if (off_parent == open_parent){
+    cout << "() balance successful!" << endl;
+  }
+  else{
+    cout << "() balance unsuccessful!" << endl;
+  }
+
+  // error calculate
+  if((off_curly - open_curly) > 0){
+    error_count = error_count + (off_curly - open_curly);
+  }
+  else{
+    error_count = error_count + (open_curly - off_curly);
+  }
+
+  if((off_parent - open_parent) > 0){
+    error_count = error_count + (off_parent - open_parent);
+  }
+  else{
+    error_count = error_count + (open_parent - off_parent);
+  }
+  cout << "----------------------------------" << endl;
+  cout << "Total Error : " << error_count << endl;
 
 }
 
-
 //******************************************************************************
+bool LexicalAnalyzer::syntaxCheck(string readLine, int lines){    
+  // while (/* condition */)
+  // if (/* condition */)
+  // for (int i = 0; i < count; i++)
+  bool open_p = false;
+  bool close_p = false;
+  // while syntax check
+  string value = readLine.c_str();
+  string keyword = ""; // while for if
 
+  if(value.find("while") > 0 || value.find("if") > 0 || value.find("for") > 0)
+  {
+    for (int i = 0; i < readLine.length(); i++)
+    {
+      if(readLine[i] == ')'){
+          open_p = true;
+      }
+      if(readLine[i] == '('){
+          close_p = true;
+      }
+    }
+
+    if((open_p == true &&close_p == false) || (open_p == false &&close_p == true) ){
+      if (open_p)
+      {
+        cout << "syntax error '(' at line " << lines << "\n" << endl;
+      }
+      else{
+        cout << "syntax error ')' at line " << lines << "\n" << endl;
+      }
+      open_p = false;
+      close_p = false;
+    }
+    
+  }
+  
+  return true;
+}
 // returns true if argument is a whitespace
 bool LexicalAnalyzer::isWhiteSpace(char ch)
 {
